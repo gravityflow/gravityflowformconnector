@@ -387,6 +387,13 @@ if ( class_exists( 'GFForms' ) ) {
 
 			$payment_status = strtolower( rgar( $entry, 'payment_status' ) );
 
+			// Check if there's a Stripe Checkout feed.
+			if ( function_exists( 'gf_stripe' ) ) {
+				if ( gf_stripe()->has_feed( $form_id, true ) && gf_stripe()->is_stripe_checkout_enabled() ) {
+					$payment_status = $entry['payment_status'] = 'processing';
+				}
+			}
+
 			if ( empty( $payment_status ) || $payment_status == 'paid' ) {
 				$assignee_status = 'complete';
 				$current_step->process_assignee_status( $assignee, $assignee_status, $form );
