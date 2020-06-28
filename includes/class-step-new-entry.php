@@ -208,6 +208,19 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 					$this->maybe_store_new_entry_id( $entry_id );
 				}
 			}
+
+			/**
+			 * Fires after the New Entry FC step has been processed.
+			 *
+			 * @since 1.7.5
+			 *
+			 * @param int                          $entry_id The newly created entry ID.
+			 * @param array                        $entry    The entry for which the step was processed.
+			 * @param array                        $form     The form for which the entry was submitted.
+			 * @param \Gravity_Flow_Step_New_Entry $this     The current instance of the Gravity_Flow_Step_New_Entry class.
+			 */
+			do_action( 'gravityflowformconnector_post_' . $this->get_type(), $entry_id, $entry, $form, $this );
+
 			return true;
 		}
 
