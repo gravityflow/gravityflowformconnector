@@ -1,1 +1,2 @@
 - Added new action gravityflowformconnector_post_new_entry to allow customized action after the New Entry step has been processed. Credit: The team at GravityWiz.
+- Fixed issue that would allow new entry without any mappings to report step completed successfully.

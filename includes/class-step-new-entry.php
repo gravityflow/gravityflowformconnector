@@ -204,24 +204,33 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 				$entry_id = GFAPI::add_entry( $new_entry );
 				if ( is_wp_error( $entry_id ) ) {
 					$this->log_debug( __METHOD__ .'(): failed to add entry' );
+					return false;
 				} else {
 					$this->maybe_store_new_entry_id( $entry_id );
 				}
+			} else {
+				$entry_id = false;
 			}
 
-			/**
-			 * Fires after the New Entry FC step has been processed.
-			 *
-			 * @since 1.7.5
-			 *
-			 * @param int                          $entry_id The newly created entry ID.
-			 * @param array                        $entry    The entry for which the step was processed.
-			 * @param array                        $form     The form for which the entry was submitted.
-			 * @param \Gravity_Flow_Step_New_Entry $this     The current instance of the Gravity_Flow_Step_New_Entry class.
-			 */
-			do_action( 'gravityflowformconnector_post_' . $this->get_type(), $entry_id, $entry, $form, $this );
+			if ( $entry_id ) {
+				/**
+				* Fires after the New Entry FC step has been processed.
+				*
+				* @since 1.7.5
+				*
+				* @param int                          $entry_id The newly created entry ID.
+				* @param array                        $entry    The entry for which the step was processed.
+				* @param array                        $form     The form for which the entry was submitted.
+				* @param \Gravity_Flow_Step_New_Entry $this     The current instance of the Gravity_Flow_Step_New_Entry class.
+				*/
+				do_action( 'gravityflowformconnector_post_' . $this->get_type(), $entry_id, $entry, $form, $this );
+				return true;
+			} else {
+				$this->log_debug( __METHOD__ .'(): No mappings defined / no entry created' );
+				return false;
+			}
 
-			return true;
+			return $false;
 		}
 
 		public function process_remote_action() {
