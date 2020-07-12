@@ -230,7 +230,7 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 				return false;
 			}
 
-			return $false;
+			return false;
 		}
 
 		public function process_remote_action() {
