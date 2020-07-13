@@ -721,6 +721,18 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 
 			return $note;
 		}
+
+		/**
+		 * Uses the Gravity Forms Add-On Framework to write a message to the log file for the Gravity Flow Form Connector extension.
+		 *
+		 * @since 1.7.5
+		 *
+		 * @param string $message The message to be logged.
+		 */
+		public function log_debug( $message ) {
+			gravity_flow_form_connector()->log_debug( $message );
+		}
+
 	}
 
 }

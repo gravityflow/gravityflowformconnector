@@ -93,7 +93,6 @@ if ( class_exists( 'GFForms' ) ) {
 			parent::init();
 			add_filter( 'gform_pre_render', array( $this, 'filter_gform_pre_render' ) );
 			add_filter( 'gform_validation', array( $this, 'filter_gform_validation' ) );
-			add_filter( 'gform_save_field_value', array( $this, 'filter_save_field_value' ), 10, 5 );
 			// Stripe Checkout hook to `gform_after_submission` and set priority as 50. It will redirect users to
 			// an external checkout page so we must run `action_gform_after_submission()` before it. Set to 40.
 			add_action( 'gform_after_submission', array( $this, 'action_gform_after_submission' ), 40, 2 );
@@ -533,7 +532,23 @@ if ( class_exists( 'GFForms' ) ) {
 				$validation_result['is_valid'] = false;
 			}
 
+			if ( $validation_result['is_valid'] ) {
+				add_filter( 'gform_save_field_value_' . $form_id, array( $this, 'filter_save_field_value' ), 10, 5 );
+				add_action( 'gform_entry_created', array( $this, 'action_gform_entry_created' ) );
+			}
+
 			return $validation_result;
+		}
+
+		/**
+		 * Removes the gform_save_field_value filter to ensure it doesn't run when other steps update the entry during the submission.
+		 *
+		 * @since 1.7.5
+		 *
+		 * @param array $entry The entry which was created from the current form submission.
+		 */
+		public function action_gform_entry_created( $entry ) {
+			remove_filter( 'gform_save_field_value_' . $entry['form_id'], array( $this, 'filter_save_field_value' ) );
 		}
 
 		/**
