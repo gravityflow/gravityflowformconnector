@@ -1,1 +1,2 @@
 - Added new action gravityflowformconnector_post_new_entry to allow customized action after the New Entry step has been processed. Credit: The team at GravityWiz.
+- Fixed an issue where values of hidden and administrative fields could be overridden when an Update an Entry step follows a Form Submission step.
