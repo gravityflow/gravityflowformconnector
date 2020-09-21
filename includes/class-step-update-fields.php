@@ -38,8 +38,14 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 					'value' => $form->id,
 				);
 			}
+			$form_ids = GFFormsModel::get_form_ids();
 
 			$action_choices = $this->action_choices();
+
+			$dependency = array(
+				'field' => 'action',
+				'values' => array( 'update' ),
+			);
 
 			$settings = array(
 				'title'  => esc_html__( 'Update Field Values', 'gravityflow' ),
@@ -111,8 +117,10 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 							array( 'label' => esc_html__( 'Select a field containing the source entry ID.', 'gravityflowformconnector' ), 'value' => 'select_entry_id_field' ),
 						),
 						'dependency' => array(
-							'field'  => 'action',
-							'values' => array( 'update' ),
+							'fields' => array(
+								array ( 'field' => 'action', 'values' => array( 'update' ) ),
+								array ( 'field' => 'source_form_id', 'values' => $form_ids ),
+							),
 						),
 					),
 					array(
@@ -130,6 +138,10 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 				),
 			);
 
+			if ( ! gravity_flow()->is_gravityforms_supported( '2.5-beta-1' ) ) {
+				$settings['fields'][6]['dependency'] = $dependency;
+			}
+
 			$lookup_setting = $this->get_setting( 'lookup_method' );
 
 			if ( empty( $lookup_setting ) || $lookup_setting == 'select_entry_id_field' ) {
@@ -140,10 +152,16 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 					'tooltip'    => __( 'Select the field which will contain the entry ID of the entry that values will be copied from.', 'gravityflowformconnector' ),
 					'required'   => true,
 					'dependency' => array(
-						'field'  => 'action',
-						'values' => array( 'update' ),
+						'fields' => array(
+							array ( 'field' => 'action', 'values' => array( 'update' ) ),
+							array ( 'field' => 'source_form_id', 'values' => $form_ids ),
+						),
 					),
 				);
+
+				if ( ! gravity_flow()->is_gravityforms_supported( '2.5-beta-1' ) ) {
+					$entry_id_field['dependency'] = $dependency;
+				}
 
 				if ( function_exists( 'gravity_flow_parent_child' ) ) {
 					$parent_form_choices = array();
@@ -184,10 +202,16 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 				'key_choices'         => $this->value_mappings(),
 				'tooltip'             => '<h6>' . esc_html__( 'Mapping', 'gravityflowformconnector' ) . '</h6>' . esc_html__( 'Map the fields of the selected form to this form. Values from the selected entry will be saved in the entry in this form.', 'gravityflowformconnector' ),
 				'dependency'          => array(
-					'field'  => 'action',
-					'values' => array( 'update' ),
+							'fields'  => array(
+								array ( 'field' => 'action', 'values' => array( 'update' ) ),
+								array ( 'field' => 'source_form_id', 'values' => $form_ids ),
+							),
 				),
 			);
+
+			if ( ! gravity_flow()->is_gravityforms_supported( '2.5-beta-1' ) ) {
+				$mapping_field['dependency'] = $dependency;
+			}
 
 			$settings['fields'][] = $mapping_field;
 
