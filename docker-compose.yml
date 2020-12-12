@@ -2,7 +2,7 @@ version: '2'
 
 services:
   codeception:
-    image: gravityflow/formconnector-codeception:latest
+    image: gravityflow/codeception-extension:latest
     depends_on:
       - wordpress
     environment:
