@@ -102,8 +102,8 @@ jobs:
         env:
           SLACK_COLOR: danger
           SLACK_ICON: https://github.com/gravityflow.png?size=48
-          SLACK_TITLE: Failed unit tests
-          SLACK_USERNAME: GitHub
+          SLACK_TITLE: Failed unit tests for Form Connector
+          SLACK_USERNAME: Gravity Flow Form Connector
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
 
   slack-notification:
@@ -115,6 +115,6 @@ jobs:
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_ICON: https://github.com/gravityflow.png?size=48
-          SLACK_TITLE: Unit tests Passed
-          SLACK_USERNAME: GitHub
+          SLACK_TITLE: Unit tests Passed for Form Connector
+          SLACK_USERNAME: Gravity Flow Form Connector
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
