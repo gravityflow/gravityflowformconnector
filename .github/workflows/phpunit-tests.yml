@@ -10,7 +10,7 @@ on:
       - master
       - '*.*'
   workflow_dispatch:
-    
+
 jobs:
   # Sets up and runs the unit tests.
   #
