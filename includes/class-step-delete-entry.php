@@ -28,72 +28,32 @@ class Gravity_Flow_Step_Delete_Entry extends Gravity_Flow_Step_New_Entry {
 	 * @return array
 	 */
 	public function get_settings() {
+		$common_settings = new Gravity_Flow_Form_Connector_Common_Step_Settings( $this );
+
 		$settings = array(
 			'title'  => esc_html__( 'Delete an Entry', 'gravityflow' ),
-			'fields' => array(
+			'fields' => $common_settings->get_server_fields(),
+		);
+
+		$settings['fields'][] = array(
+			'name'          => 'delete_action',
+			'label'         => esc_html__( 'Delete Action', 'gravityflowformconnector' ),
+			'type'          => 'radio',
+			'default_value' => 'permanently',
+			'horizontal'    => true,
+			'choices'       => array(
 				array(
-					'name'          => 'server_type',
-					'label'         => esc_html__( 'Site', 'gravityflowformconnector' ),
-					'type'          => 'radio',
-					'default_value' => 'local',
-					'horizontal'    => true,
-					'onchange'      => 'jQuery(this).closest("form").submit();',
-					'choices'       => array(
-						array( 'label' => esc_html__( 'This site', 'gravityflowformconnector' ), 'value' => 'local' ),
-						array(
-							'label' => esc_html__( 'A different site', 'gravityflowformconnector' ),
-							'value' => 'remote'
-						),
-					),
+					'label' => esc_html__( 'Permanently delete the entry', 'gravityflowformconnector' ),
+					'value' => 'permanently',
 				),
 				array(
-					'name'       => 'remote_site_url',
-					'label'      => esc_html__( 'Site Url', 'gravityflowformconnector' ),
-					'type'       => 'text',
-					'dependency' => array(
-						'field'  => 'server_type',
-						'values' => array( 'remote' ),
-					),
+					'label' => esc_html__( 'Move the entry to the trash', 'gravityflowformconnector' ),
+					'value' => 'trash',
 				),
-				array(
-					'name'       => 'remote_public_key',
-					'label'      => esc_html__( 'Public Key', 'gravityflowformconnector' ),
-					'type'       => 'text',
-					'dependency' => array(
-						'field'  => 'server_type',
-						'values' => array( 'remote' ),
-					),
-				),
-				array(
-					'name'       => 'remote_private_key',
-					'label'      => esc_html__( 'Private Key', 'gravityflowformconnector' ),
-					'type'       => 'text',
-					'dependency' => array(
-						'field'  => 'server_type',
-						'values' => array( 'remote' ),
-					),
-				),
-				array(
-					'name'          => 'delete_action',
-					'label'         => esc_html__( 'Delete Action', 'gravityflowformconnector' ),
-					'type'          => 'radio',
-					'default_value' => 'permanently',
-					'horizontal'    => true,
-					'choices'       => array(
-						array(
-							'label' => esc_html__( 'Permanently delete the entry', 'gravityflowformconnector' ),
-							'value' => 'permanently',
-						),
-						array(
-							'label' => esc_html__( 'Move the entry to the trash', 'gravityflowformconnector' ),
-							'value' => 'trash',
-						),
-					),
-					'dependency'    => array(
-						'field'  => 'server_type',
-						'values' => array( 'local' ),
-					),
-				),
+			),
+			'dependency'    => array(
+				'field'  => 'server_type',
+				'values' => array( 'local' ),
 			),
 		);
 
