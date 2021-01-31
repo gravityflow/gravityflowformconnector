@@ -38,65 +38,29 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 
 			$action_choices = $this->action_choices();
 
+			$common_settings = new Gravity_Flow_Form_Connector_Common_Step_Settings( $this );
+
 			$settings = array(
 				'title'  => esc_html__( 'Update an Entry', 'gravityflow' ),
-				'fields' => array(
-					array(
-						'name'          => 'server_type',
-						'label'         => esc_html__( 'Site', 'gravityflowformconnector' ),
-						'type'          => 'radio',
-						'default_value' => 'local',
-						'horizontal'    => true,
-						'onchange'      => 'jQuery(this).closest("form").submit();',
-						'choices'       => array(
-							array( 'label' => esc_html__( 'This site', 'gravityflowformconnector' ), 'value' => 'local' ),
-							array( 'label' => esc_html__( 'A different site', 'gravityflowformconnector' ), 'value' => 'remote' ),
-						),
-					),
-					array(
-						'name'       => 'remote_site_url',
-						'label'      => esc_html__( 'Site Url', 'gravityflowformconnector' ),
-						'type'       => 'text',
-						'dependency' => array(
-							'field'  => 'server_type',
-							'values' => array( 'remote' ),
-						),
-					),
-					array(
-						'name'       => 'remote_public_key',
-						'label'      => esc_html__( 'Public Key', 'gravityflowformconnector' ),
-						'type'       => 'text',
-						'dependency' => array(
-							'field'  => 'server_type',
-							'values' => array( 'remote' ),
-						),
-					),
-					array(
-						'name'       => 'remote_private_key',
-						'label'      => esc_html__( 'Private Key', 'gravityflowformconnector' ),
-						'type'       => 'text',
-						'dependency' => array(
-							'field'  => 'server_type',
-							'values' => array( 'remote' ),
-						),
-					),
-					array(
-						'name'     => 'target_form_id',
-						'label'    => esc_html__( 'Form', 'gravityflowformconnector' ),
-						'type'     => 'select',
-						'onchange' => "jQuery('#action').val('update');jQuery(this).closest('form').submit();",
-						'choices'  => $form_choices,
-					),
-					array(
-						'name'       => 'action',
-						'label'      => esc_html__( 'Action', 'gravityflowformconnector' ),
-						'type'       => count( $action_choices ) == 1 ? 'hidden' : 'select',
-						'default_value' => 'update',
-						'horizontal' => true,
-						'onchange'   => "jQuery(this).closest('form').submit();",
-						'choices'    => $action_choices,
-					),
-				),
+				'fields' => $common_settings->get_server_fields(),
+			);
+
+			$settings['fields'][] = array(
+				'name'     => 'target_form_id',
+				'label'    => esc_html__( 'Form', 'gravityflowformconnector' ),
+				'type'     => 'select',
+				'onchange' => "jQuery('#action').val('update');jQuery(this).closest('form').submit();",
+				'choices'  => $form_choices,
+			);
+
+			$settings['fields'][] = array(
+				'name'          => 'action',
+				'label'         => esc_html__( 'Action', 'gravityflowformconnector' ),
+				'type'          => count( $action_choices ) == 1 ? 'hidden' : 'select',
+				'default_value' => 'update',
+				'horizontal'    => true,
+				'onchange'      => "jQuery(this).closest('form').submit();",
+				'choices'       => $action_choices,
 			);
 
 			$entry_id_field = array(
