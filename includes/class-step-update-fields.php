@@ -27,120 +27,60 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 		 */
 		public function get_settings() {
 
-			$forms          = $this->get_forms();
-			$form_choices[] = array(
-				'label' => esc_html__( 'Select a Form', 'gravityflowformconnector' ),
-				'value' => '',
+			$form_choices = array(
+				array(
+					'label' => esc_html__( 'Select a Form', 'gravityflowformconnector' ),
+					'value' => '',
+				),
 			);
+
+			$forms    = $this->get_forms();
+			$form_ids = array();
+
 			foreach ( $forms as $form ) {
 				$form_choices[] = array(
 					'label' => $form->title,
 					'value' => $form->id,
 				);
+				$form_ids[]     = $form->id;
 			}
-			$form_ids = GFFormsModel::get_form_ids();
 
 			$action_choices = $this->action_choices();
 
+			$common_settings = new Gravity_Flow_Form_Connector_Common_Step_Settings( $this );
+			$form_id         = $this->get_setting( 'source_form_id' );
+
 			$dependency = array(
-				'field' => 'action',
-				'values' => array( 'update' ),
+				'fields' => array(
+					array( 'field' => 'action', 'values' => array( 'update' ) ),
+					array( 'field' => 'source_form_id', 'values' => $form_ids ),
+				),
 			);
 
 			$settings = array(
 				'title'  => esc_html__( 'Update Field Values', 'gravityflow' ),
-				'fields' => array(
-					array(
-						'name'          => 'server_type',
-						'label'         => esc_html__( 'Site', 'gravityflowformconnector' ),
-						'type'          => 'radio',
-						'default_value' => 'local',
-						'horizontal'    => true,
-						'onchange'      => 'jQuery(this).closest("form").submit();',
-						'choices'       => array(
-							array( 'label' => esc_html__( 'This site', 'gravityflowformconnector' ), 'value' => 'local' ),
-							array( 'label' => esc_html__( 'A different site', 'gravityflowformconnector' ), 'value' => 'remote' ),
+				'fields' => array_merge( $common_settings->get_server_fields(), array(
+						array(
+							'name'     => 'source_form_id',
+							'label'    => esc_html__( 'Source Form', 'gravityflowformconnector' ),
+							'type'     => 'select',
+							'onchange' => "jQuery('#action').val('update');jQuery(this).closest('form').submit();",
+							'choices'  => $form_choices,
 						),
-					),
-					array(
-						'name'       => 'remote_site_url',
-						'label'      => esc_html__( 'Site Url', 'gravityflowformconnector' ),
-						'type'       => 'text',
-						'dependency' => array(
-							'field'  => 'server_type',
-							'values' => array( 'remote' ),
+						array(
+							'name'          => 'action',
+							'label'         => esc_html__( 'Action', 'gravityflowformconnector' ),
+							'type'          => count( $action_choices ) == 1 ? 'hidden' : 'select',
+							'default_value' => 'update',
+							'horizontal'    => true,
+							'onchange'      => "jQuery(this).closest('form').submit();",
+							'choices'       => $action_choices,
 						),
-					),
-					array(
-						'name'       => 'remote_public_key',
-						'label'      => esc_html__( 'Public Key', 'gravityflowformconnector' ),
-						'type'       => 'text',
-						'dependency' => array(
-							'field'  => 'server_type',
-							'values' => array( 'remote' ),
-						),
-					),
-					array(
-						'name'       => 'remote_private_key',
-						'label'      => esc_html__( 'Private Key', 'gravityflowformconnector' ),
-						'type'       => 'text',
-						'dependency' => array(
-							'field'  => 'server_type',
-							'values' => array( 'remote' ),
-						),
-					),
-					array(
-						'name'     => 'source_form_id',
-						'label'    => esc_html__( 'Source Form', 'gravityflowformconnector' ),
-						'type'     => 'select',
-						'onchange' => "jQuery('#action').val('update');jQuery(this).closest('form').submit();",
-						'choices'  => $form_choices,
-					),
-					array(
-						'name'       => 'action',
-						'label'      => esc_html__( 'Action', 'gravityflowformconnector' ),
-						'type'       => count( $action_choices ) == 1 ? 'hidden' : 'select',
-						'default_value' => 'update',
-						'horizontal' => true,
-						'onchange'   => "jQuery(this).closest('form').submit();",
-						'choices'    => $action_choices,
-					),
-					array(
-						'name'          => 'lookup_method',
-						'label'         => esc_html__( 'Entry Lookup', 'gravityflowformconnector' ),
-						'type'          => 'radio',
-						'default_value' => 'select_entry_id_field',
-						'horizontal'    => true,
-						'onchange'      => 'jQuery(this).closest("form").submit();',
-						'choices'       => array(
-							array( 'label' => esc_html__( 'Conditional Logic', 'gravityflowformconnector' ), 'value' => 'filter' ),
-							array( 'label' => esc_html__( 'Select a field containing the source entry ID.', 'gravityflowformconnector' ), 'value' => 'select_entry_id_field' ),
-						),
-						'dependency' => array(
-							'fields' => array(
-								array ( 'field' => 'action', 'values' => array( 'update' ) ),
-								array ( 'field' => 'source_form_id', 'values' => $form_ids ),
-							),
-						),
-					),
-					array(
-						'name'                 => 'entry_filter',
-						'show_sorting_options' => true,
-						'form_id'              => $this->get_setting( 'source_form_id' ),
-						'label'                => esc_html__( 'Lookup Conditional Logic', 'gravityflowformconnector' ),
-						'type'                 => 'entry_filter',
-						'filter_text'          => esc_html__( 'Look up the first entry matching {0} of the following criteria:', 'gravityflowformconnector' ),
-						'dependency'           => array(
-							'field'  => 'lookup_method',
-							'values' => array( 'filter' ),
-						),
-					),
+						$common_settings->get_lookup_method_field( $dependency ),
+						$common_settings->get_entry_filter_field( $form_id ),
+					)
 				),
 			);
-
-			if ( ! gravity_flow()->is_gravityforms_supported( '2.5-beta-1' ) ) {
-				$settings['fields'][6]['dependency'] = $dependency;
-			}
 
 			$lookup_setting = $this->get_setting( 'lookup_method' );
 
@@ -151,17 +91,8 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 					'type'       => 'field_select',
 					'tooltip'    => __( 'Select the field which will contain the entry ID of the entry that values will be copied from.', 'gravityflowformconnector' ),
 					'required'   => true,
-					'dependency' => array(
-						'fields' => array(
-							array ( 'field' => 'action', 'values' => array( 'update' ) ),
-							array ( 'field' => 'source_form_id', 'values' => $form_ids ),
-						),
-					),
+					'dependency' => $common_settings->fields_dependency( $dependency ),
 				);
-
-				if ( ! gravity_flow()->is_gravityforms_supported( '2.5-beta-1' ) ) {
-					$entry_id_field['dependency'] = $dependency;
-				}
 
 				if ( function_exists( 'gravity_flow_parent_child' ) ) {
 					$parent_form_choices = array();
@@ -201,17 +132,8 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 				'value_choices'       => $this->field_mappings( 'source_form_id' ),
 				'key_choices'         => $this->value_mappings(),
 				'tooltip'             => '<h6>' . esc_html__( 'Mapping', 'gravityflowformconnector' ) . '</h6>' . esc_html__( 'Map the fields of the selected form to this form. Values from the selected entry will be saved in the entry in this form.', 'gravityflowformconnector' ),
-				'dependency'          => array(
-							'fields'  => array(
-								array ( 'field' => 'action', 'values' => array( 'update' ) ),
-								array ( 'field' => 'source_form_id', 'values' => $form_ids ),
-							),
-				),
+				'dependency'          => $common_settings->fields_dependency( $dependency ),
 			);
-
-			if ( ! gravity_flow()->is_gravityforms_supported( '2.5-beta-1' ) ) {
-				$mapping_field['dependency'] = $dependency;
-			}
 
 			$settings['fields'][] = $mapping_field;
 
