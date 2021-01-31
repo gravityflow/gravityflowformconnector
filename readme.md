@@ -1,7 +1,7 @@
 Gravity Flow Form Connector Extension
 =====================================
 
-[![Build Status](https://travis-ci.com/gravityflow/gravityflowformconnector.svg?branch=master)](https://travis-ci.com/gravityflow/gravityflowformconnector)  [![CircleCI](https://circleci.com/gh/gravityflow/gravityflowformconnector.svg?style=svg)](https://circleci.com/gh/gravityflow/gravityflowformconnector)
+[![PHPUnit Tests](https://github.com/gravityflow/gravityflowformconnector/workflows/PHPUnit%20Tests/badge.svg)](https://github.com/gravityflow/gravityflowformconnector/actions?query=workflow%3A%22PHPUnit+Tests%22)  [![CircleCI](https://circleci.com/gh/gravityflow/gravityflowformconnector.svg?style=svg)](https://circleci.com/gh/gravityflow/gravityflowformconnector)
 
 The Gravity Flow Form Connector Extension is a premium plugin for WordPress which allows Gravity Flow administrators to create workflow steps that create or update entries for a different form.
 
