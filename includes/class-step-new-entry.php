@@ -28,57 +28,19 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 				$form_choices[] = array( 'label' => $form->title, 'value' => $form->id );
 			}
 
+			$common_settings = new Gravity_Flow_Form_Connector_Common_Step_Settings( $this );
 
 			$settings = array(
 				'title'  => esc_html__( 'New Entry', 'gravityflow' ),
-				'fields' => array(
-					array(
-						'name' => 'server_type',
-						'label' => esc_html__( 'Site', 'gravityflowformconnector' ),
-						'type' => 'radio',
-						'default_value' => 'local',
-						'horizontal' => true,
-						'onchange' => 'jQuery(this).closest("form").submit();',
-						'choices' => array(
-							array( 'label' => esc_html__( 'This site', 'gravityflowformconnector' ), 'value' => 'local' ),
-							array( 'label' => esc_html__( 'A different site', 'gravityflowformconnector' ), 'value' => 'remote' ),
-						),
-					),
-					array(
-						'name' => 'remote_site_url',
-						'label' => esc_html__( 'Site Url', 'gravityflowformconnector' ),
-						'type' => 'text',
-						'dependency' => array(
-							'field'  => 'server_type',
-							'values' => array( 'remote' ),
-						),
-					),
-					array(
-						'name' => 'remote_public_key',
-						'label' => esc_html__( 'Public Key', 'gravityflowformconnector' ),
-						'type' => 'text',
-						'dependency' => array(
-							'field'  => 'server_type',
-							'values' => array( 'remote' ),
-						),
-					),
-					array(
-						'name' => 'remote_private_key',
-						'label' => esc_html__( 'Private Key', 'gravityflowformconnector' ),
-						'type' => 'text',
-						'dependency' => array(
-							'field'  => 'server_type',
-							'values' => array( 'remote' ),
-						),
-					),
-					array(
-						'name' => 'target_form_id',
-						'label' => esc_html__( 'Form', 'gravityflowformconnector' ),
-						'type' => 'select',
-						'onchange'    => "jQuery(this).closest('form').submit();",
-						'choices' => $form_choices,
-					),
-				),
+				'fields' => $common_settings->get_server_fields(),
+			);
+
+			$settings['fields'][] = array(
+				'name'     => 'target_form_id',
+				'label'    => esc_html__( 'Form', 'gravityflowformconnector' ),
+				'type'     => 'select',
+				'onchange' => "jQuery(this).closest('form').submit();",
+				'choices'  => $form_choices,
 			);
 
 			if ( version_compare( gravity_flow()->_version, '1.3.0.10', '>=' ) ) {
@@ -142,6 +104,17 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 			$settings['fields'][] = $entry_id_field;
 
 			return $settings;
+		}
+
+		/**
+		 * Determines if REST API 2 is the selected integration method.
+		 *
+		 * @since 1.7.5
+		 *
+		 * @return bool
+		 */
+		public function is_api_v2() {
+			return $this->get_setting( 'api_version' ) === '2';
 		}
 
 		/**
@@ -310,7 +283,69 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 			return $form;
 		}
 
+		/**
+		 * Performs a request to REST API V2 on a remote site.
+		 *
+		 * @since 1.7.5
+		 *
+		 * @param string      $route      The endpoint to contact.
+		 * @param string      $method     The request method.
+		 * @param null|string $body       The request body.
+		 * @param array       $query_args The request query arguments.
+		 *
+		 * @return false|array
+		 */
+		public function remote_request_v2( $route, $method = 'GET', $body = null, $query_args = array() ) {
+			$site_url     = $this->get_setting( 'remote_site_url' );
+			$consumer_key = $this->get_setting( 'remote_public_key' );
+			$secret_key   = $this->get_setting( 'remote_private_key' );
+
+			if ( empty( $site_url ) || empty( $consumer_key ) || empty( $secret_key ) ) {
+				return false;
+			}
+
+			$args = array(
+				'method'  => $method,
+				'headers' => array(
+					'Authorization' => 'Basic ' . base64_encode( $consumer_key . ':' . $secret_key ),
+					'Content-type'  => 'application/json',
+				),
+			);
+
+			$url = trailingslashit( $site_url ) . 'gf/v2/' . trailingslashit( $route );
+
+			if ( ! empty( $query_args ) ) {
+				$url = add_query_arg( urlencode_deep( $query_args ), $url );
+			}
+
+			if ( in_array( $method, array( 'POST', 'PUT' ) ) ) {
+				$args['body'] = $body;
+			}
+
+			$this->log_debug( __METHOD__ . '(): URL: ' . $url );
+			$this->log_debug( __METHOD__ . '(): args: ' . print_r( $args, true ) );
+
+			$response = wp_remote_request( $url, $args );
+
+			$this->log_debug( __METHOD__ . '(): response: ' . print_r( $response, true ) );
+
+			if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) > 202 ) {
+				return false;
+			}
+
+			$response_body = wp_remote_retrieve_body( $response );
+
+			if ( empty( $response_body ) ) {
+				return false;
+			}
+
+			return json_decode( $response_body, true );
+		}
+
 		public function remote_request( $route, $method = 'GET', $body = null, $query_args = array() ) {
+			if ( $this->is_api_v2() ) {
+				return $this->remote_request_v2( $route, $method, $body, $query_args );
+			}
 
 			$this->log_debug( __METHOD__ . '(): starting.' );
 
@@ -368,12 +403,14 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 		 * @return int The new Entry ID
 		 */
 		public function add_remote_entry( $entry ) {
-			$target_form_id = $this->target_form_id;
-			$route = 'forms/' . $target_form_id . '/entries';
-			$method = 'POST';
-			$body = json_encode( array( $entry ) );
-			$entry_ids = $this->remote_request( $route, $method, $body );
-			return $entry_ids[0];
+			$is_v2    = $this->is_api_v2();
+			$route    = 'forms/' . $this->target_form_id . '/entries';
+			$method   = 'POST';
+			$body     = json_encode( $is_v2 ? $entry : array( $entry ) );
+			$response = $this->remote_request( $route, $method, $body );
+			$key      = $is_v2 ? 'id' : 0;
+
+			return rgar( $response, $key );
 		}
 
 		/**
