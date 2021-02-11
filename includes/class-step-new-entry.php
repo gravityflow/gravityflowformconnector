@@ -164,6 +164,10 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 			}
 
 			$fields = $this->get_field_map_choices( $target_form );
+			$fields = array_filter( $fields, function( $field ) {
+				return $field['value'] != 'id';
+			});
+			
 			return $fields;
 		}
 
