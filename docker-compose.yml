@@ -26,6 +26,9 @@ services:
       - 80:80
     environment:
       WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_CONFIG_EXTRA: |
+        /* Gravity Flow and Gravity Forms development versions require SCRIPT_DEBUG */
+        define( 'SCRIPT_DEBUG', true );
 
   mysql:
     image: mariadb
