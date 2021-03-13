@@ -25,7 +25,10 @@ services:
       - 8080:80
       - 80:80
     environment:
+      WORDPRESS_DB_HOST: mysql
+      WORDPRESS_DB_USER: wordpress
       WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
       WORDPRESS_CONFIG_EXTRA: |
         /* Gravity Flow and Gravity Forms development versions require SCRIPT_DEBUG */
         define( 'SCRIPT_DEBUG', true );
